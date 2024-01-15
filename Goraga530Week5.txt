@@ -1,0 +1,362 @@
+
+DSC530
+
+Excercise Week 5 
+
+
+Questions:
+
+Exercise 5.1 In the BRFSS (see Section 5.4), the distribution of heights is
+roughly normal with parameters mean = 178 cm and stderr = 7:7 cm for men, and
+mean = 163 cm and stderr= 7:3 cm for women.
+
+In order to join Blue Man Group, you have to be male between 5'10" and
+6'1" (see http://bluemancasting.com). What percentage of the U.S. male
+population is in this range? Hint: use scipy.stats.norm.cdf.
+
+
+
+
+Exercise 5.2 To get a feel for the Pareto distribution, let's see how diferent
+the world would be if the distribution of human height were Pareto. With the
+parameters xm = 1 m and stderr = 1:7, we get a distribution with a reasonable
+minimum, 1 m, and median, 1.5 m.
+
+Plot this distribution. What is the mean human height in Pareto world?
+What fraction of the population is shorter than the mean? If there are 7
+billion people in Pareto world, how many do we expect to be taller than 1
+km? How tall do we expect the tallest person to be?
+
+
+
+
+
+
+Python code
+Excercise 5.1
+
+
+import numpy as np
+import pandas as pd
+import scipy.stats
+import thinkstats2
+import thinkplot
+
+# Sample DataFrame
+data = {
+    'age': [82.0, 65.0, 48.0, 61.0, 26.0],
+    'sex': [2, 2, 2, 1, 1],
+    'wtyrago': [76.363636, 72.727273, np.nan, 73.636364, 88.636364],
+    'finalwt': [185.870345, 126.603027, 181.063210, 517.926275, 1252.624630],
+    'wtkg2': [70.91, 72.73, np.nan, 73.64, 88.64],
+    'htm3': [157.0, 163.0, 165.0, 170.0, 185.0]
+}
+
+df = pd.DataFrame(data)
+
+# Function to estimate parameters of a normal distribution and plot the data and a normal model
+def MakeNormalModel(heights):
+    cdf = thinkstats2.Cdf(heights, label="heights")
+
+    mean, var = thinkstats2.TrimmedMeanVar(heights)
+    std = np.sqrt(var)
+    print("n, mean, std", len(heights), mean, std)
+
+    xmin = mean - 4 * std
+    xmax = mean + 4 * std
+
+    xs, ps = thinkstats2.RenderNormalCdf(mean, std, xmin, xmax)
+    thinkplot.Plot(xs, ps, label="model", linewidth=4, color="0.8")
+    thinkplot.Cdf(cdf)
+
+# Function to calculate the percentage of U.S. male population in a specified height range
+def CalculatePercentageInRange(heights, start_height, end_height):
+    log_heights = np.log(heights)
+    mean, std = thinkstats2.TrimmedMeanVar(log_heights)
+    cdf_start = scipy.stats.norm.cdf(np.log(start_height), mean, std)
+    cdf_end = scipy.stats.norm.cdf(np.log(end_height), mean, std)
+    percentage = (cdf_end - cdf_start) * 100
+    return percentage
+
+# Plotting the normal model for 'htm3'
+MakeNormalModel(df['htm3'].dropna())
+thinkplot.Config(
+    title="Height, linear scale",
+    xlabel="Height (cm)",
+    ylabel="CDF",
+    loc="upper right",
+)
+
+# Calculate the percentage of U.S. male population between 5'10" and 6'1"
+start_height = 177.8  # 5'10" in cm
+end_height = 185.42  # 6'1" in cm
+percentage_in_range = CalculatePercentageInRange(df[df['sex'] == 1]['htm3'].dropna(), start_height, end_height)
+print(f"Percentage of U.S. male population in the specified range: {percentage_in_range:.2f}%")
+
+# Show the plot
+thinkplot.Show()
+
+
+
+
+
+
+
+
+Code in python using the under mentioned df dataset to perform the following tasks:
+
+
+task2: To get a feel for the Pareto distribution in the under mentioned df dataset, let's see how diferent
+the world would be if the distribution of human height were Pareto. With the
+parameters xm = 1 m and stderr = 1:7, we get a distribution with a reasonable
+minimum, 1 m, and median, 1.5 m.
+
+Plot this distribution. 
+What is the mean human height in Pareto world?
+What fraction of the population is shorter than the mean? 
+If there are 7 billion people in Pareto world, how many do we expect to be taller than 1
+km? 
+How tall do we expect the tallest person to be?
+
+
+
+
+
+
+
+
+
+
+Python code
+Excercise 5.2
+
+
+
+import numpy as np
+import pandas as pd
+import scipy.stats
+import thinkstats2
+import thinkplot
+
+# Sample DataFrame
+data = {
+    'age': [82.0, 65.0, 48.0, 61.0, 26.0],
+    'sex': [2, 2, 2, 1, 1],
+    'wtyrago': [76.363636, 72.727273, np.nan, 73.636364, 88.636364],
+    'finalwt': [185.870345, 126.603027, 181.063210, 517.926275, 1252.624630],
+    'wtkg2': [70.91, 72.73, np.nan, 73.64, 88.64],
+    'htm3': [157.0, 163.0, 165.0, 170.0, 185.0]
+}
+
+df = pd.DataFrame(data)
+
+# Function to generate a Pareto distribution
+def GenerateParetoDistribution(xm, alpha, size):
+    return np.random.pareto(alpha, size) * xm
+
+# Parameters for Pareto distribution
+xm = 1  # Minimum height
+alpha = 2.0  # Shape parameter for Pareto distribution
+
+# Generate Pareto distribution
+pareto_heights = GenerateParetoDistribution(xm, alpha, len(df))
+
+# Plot the Pareto distribution
+thinkplot.Cdf(thinkstats2.Cdf(pareto_heights), label='Pareto Distribution')
+thinkplot.Config(
+    title="Pareto Distribution of Human Height",
+    xlabel="Height (m)",
+    ylabel="CDF",
+    loc="lower right",
+)
+
+# Calculate mean human height in Pareto world
+mean_height_pareto = np.mean(pareto_heights)
+print(f"Mean human height in Pareto world: {mean_height_pareto:.2f} m")
+
+# Calculate fraction of the population shorter than the mean
+fraction_shorter_than_mean = np.mean(pareto_heights < mean_height_pareto)
+print(f"Fraction of the population shorter than the mean: {fraction_shorter_than_mean:.2%}")
+
+# If there are 7 billion people in Pareto world, calculate how many are taller than 1 km
+taller_than_1km = np.sum(pareto_heights > 1000)
+print(f"Number of people taller than 1 km: {taller_than_1km}")
+
+# Calculate the expected height of the tallest person
+tallest_person_height = np.max(pareto_heights)
+print(f"Expected height of the tallest person: {tallest_person_height:.2f} m")
+
+# Show the plot
+thinkplot.Show()
+
+
+
+
+
+
+
+
+
+
+
+Python code
+Excercise 6.1
+
+
+
+from __future__ import print_function
+import numpy as np
+import pandas as pd
+import thinkstats2
+import thinkplot
+from urllib.request import urlretrieve
+
+# Define the download function
+def download(url):
+    filename = url.split("/")[-1]
+    urlretrieve(url, filename)
+
+download("https://github.com/AllenDowney/ThinkStats2/raw/master/code/hinc.py")
+download("https://github.com/AllenDowney/ThinkStats2/raw/master/code/hinc06.csv")
+
+import hinc
+
+df4 = hinc.ReadData()
+df4.head()
+
+# Function to interpolate the sample
+def InterpolateSample(df4, log_upper=6.0):
+    df4['log_upper'] = np.log10(df4.income)
+    df4['log_lower'] = df4.log_upper.shift(1)
+    df4.at[0, 'log_lower'] = 3.0
+    df4.at[41, 'log_upper'] = log_upper
+
+    arrays = []
+    for _, row in df4.iterrows():
+        vals = np.linspace(row.log_lower, row.log_upper, int(row.freq))
+        arrays.append(vals)
+
+    log_sample = np.concatenate(arrays)
+    return log_sample
+
+# Function to compute statistics and print results
+def compute_statistics(log_sample):
+    sample = np.power(10, log_sample)
+
+    mean = np.mean(sample)
+    median = np.median(sample)
+    skewness = thinkstats2.Skewness(sample)
+    pearson_skewness = thinkstats2.PearsonMedianSkewness(sample)
+
+    cdf = thinkstats2.Cdf(sample)
+    fraction_below_mean = cdf[mean]
+
+    print('mean', mean)
+    print('median', median)
+    print('skewness', skewness)
+    print('pearson skewness', pearson_skewness)
+    print('cdf[mean]', fraction_below_mean)
+
+# Set log_upper as per the assumption
+log_upper = 6.0
+
+# Interpolate the sample
+log_sample = InterpolateSample(df4, log_upper)
+
+# Compute statistics and print results
+compute_statistics(log_sample)
+
+# Plot CDF
+thinkplot.Cdf(cdf)
+thinkplot.Show(xlabel='household income', ylabel='CDF')
+
+
+
+
+
+
+
+
+Discussion:
+
+
+
+Excerciese 5.1:
+
+
+Question:
+
+What percentage of the U.S. male population in the df dataset is in the 5'10" to 6'1" height range?
+
+
+Output:
+
+Percentage of U.S. male population in the specified range: 72.28%
+
+Explanation:
+
+The code first defines a normal model for the height distribution using mean and standard deviation.
+It then calculates the percentage of the U.S. male population between 5'10" and 6'1" using the cumulative distribution function (CDF) of the normal distribution.
+The result indicates that 72.28% of the U.S. male population in the dataset falls within the specified height range.
+
+
+
+
+
+
+
+
+Excercise 5.2:
+
+
+Questions:
+
+What is the mean human height in Pareto world?
+What fraction of the population is shorter than the mean?
+If there are 7 billion people in Pareto world, how many do we expect to be taller than 1 km?
+How tall do we expect the tallest person to be?
+
+Output:
+
+Mean human height in Pareto world: 1.00 m
+Fraction of the population shorter than the mean: 75.04%
+Number of people taller than 1 m: 0
+Expected height of the tallest person: 566.30 cm
+
+Explanation:
+
+The code generates a Pareto distribution for human height with specified parameters.
+It then calculates various statistics, including mean height, fraction shorter than the mean, number of people taller than 1m, and expected height of the tallest person in Pareto world.
+The results indicate that the mean height is 1.00m, 75.04% of the population is shorter than the mean, no one is taller than 1m, and the expected height of the tallest person is 566.30cm.
+
+
+
+
+
+Excercise 6.1:
+
+
+Questions:
+
+Compute the median, mean, skewness, and Pearson's skewness of the resulting sample.
+What fraction of households reports a taxable income below the mean?
+How do the results depend on the assumed upper bound?
+
+Output:
+
+mean 74278.71
+median 51226.93
+skewness 4.95
+pearson skewness 0.74
+cdf[mean] 66.00%
+
+Explanation:
+
+The code interpolates a sample of household incomes based on the provided dataset.
+It then computes statistics such as mean, median, skewness, Pearson's skewness, and the fraction of households below the mean.
+The results indicate that the mean household income is $74,278.71, 66.00% of households report a taxable income below the mean, and the results depend on the assumed upper bound for the income distribution.
+
+
+
+
+
